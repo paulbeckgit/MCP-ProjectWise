@@ -1,0 +1,36 @@
+{
+  "servers": {
+    "projectwise": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/server.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PW_WSG_BASE_URL": "${input:pwWsgBaseUrl}",
+        "PW_REPOSITORY_ID": "${input:pwRepositoryId}",
+        "PW_TOKEN": "${input:pwToken}",
+        "PW_APP_GUID": "projectwise-mcp-server"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "id": "pwWsgBaseUrl",
+      "type": "promptString",
+      "description": "ProjectWise WSG Base URL (e.g., https://server/ws/v2.8)",
+      "default": ""
+    },
+    {
+      "id": "pwRepositoryId",
+      "type": "promptString",
+      "description": "ProjectWise Repository ID (datasource GUID)",
+      "default": ""
+    },
+    {
+      "id": "pwToken",
+      "type": "promptString",
+      "description": "Bearer Token (Bentley IMS)",
+      "password": true
+    }
+  ]
+}
