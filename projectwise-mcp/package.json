@@ -1,6 +1,6 @@
 {
   "name": "projectwise-mcp",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "MCP Server for Bentley ProjectWise via WSG REST API",
   "type": "module",
   "main": "dist/server.js",

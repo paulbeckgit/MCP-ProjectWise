@@ -1,71 +1,59 @@
 # ProjectWise MCP Server
 
-An **STDIO-based MCP server** for VS Code that integrates with **Bentley ProjectWise** via the **Web Services Gateway (WSG) REST API**.
+An **STDIO-based Model Context Protocol (MCP) server** for VS Code that exposes **Bentley ProjectWise** (via the **Web Services Gateway / WSG REST API**) as MCP tools.
 
-## Features
+## What it does
 
-- 🔌 **STDIO Transport** - Secure subprocess communication with VS Code
-- 📁 **Folder Operations** - List and navigate folder hierarchies
-- 📄 **Document Operations** - List, search, and get document metadata
-- 🏗️ **Project Listing** - View all projects in a repository
-- 📊 **Repository Info** - Get repository connection details
+- 🔌 STDIO transport for safe subprocess comms with MCP-capable VS Code clients
+- 📁 Folder navigation and metadata
+- 📄 Document listing, search, and metadata
+- 🏗️ Project listing
+- 📊 Repository info lookup
 
-## Prerequisites
+## Requirements
 
-- **Node.js** 18+ and **npm**
-- **VS Code** with MCP client support (GitHub Copilot or compatible extension)
-- Access to a **ProjectWise WSG** deployment
+- Node.js 18+
+- npm
+- VS Code with an MCP client (GitHub Copilot Chat or compatible)
+- Network access to a ProjectWise WSG deployment
 
-## Quick Start
-
-### 1. Install Dependencies
+## Quick start
 
 ```bash
 cd projectwise-mcp
 npm install
-```
-
-### 2. Build the Server
-
-```bash
 npm run build
 ```
 
-### 3. Configure Environment
-
-Copy `.env.example` to `.env` and fill in your values:
+Configure environment (copy the template):
 
 ```bash
 cp .env.example .env
 ```
 
-Required environment variables:
+Fill these variables:
 
 | Variable | Description |
 |----------|-------------|
-| `PW_WSG_BASE_URL` | WSG base URL (e.g., `https://server/ws/v2.8`) |
+| `PW_WSG_BASE_URL` | WSG base URL, e.g. `https://server/ws/v2.8` |
 | `PW_REPOSITORY_ID` | Repository/datasource GUID |
 | `PW_TOKEN` | Bearer token from Bentley IMS |
+| `PW_APP_GUID` | Optional, defaults to `projectwise-mcp-server` |
+| `PW_SESSION_UUID` | Optional; auto-generated if omitted |
 
-Authentication is token-only; Basic authentication has been removed.
-
-### 4. Test the Server
+Run the server:
 
 ```bash
-# Run in development mode
+# TypeScript + auto-reload
 npm run dev
 
-# Or run the built version
+# Built JS
 npm start
 ```
 
-## VS Code Integration
+## VS Code (MCP) setup
 
-The `.vscode/mcp.json` file is pre-configured. VS Code will prompt you for credentials when starting the server.
-
-### Manual Configuration
-
-If you need to configure manually, add to your VS Code settings:
+The repo ships with `.vscode/mcp.json` pre-wired for the STDIO server. If you need to wire manually, add to settings:
 
 ```json
 {
@@ -73,7 +61,7 @@ If you need to configure manually, add to your VS Code settings:
     "projectwise": {
       "type": "stdio",
       "command": "node",
-      "args": ["<path-to>/projectwise-mcp/dist/server.js"],
+      "args": ["/absolute/path/to/projectwise-mcp/dist/server.js"],
       "env": {
         "PW_WSG_BASE_URL": "https://your-server/ws/v2.8",
         "PW_REPOSITORY_ID": "your-repo-guid",
@@ -84,11 +72,11 @@ If you need to configure manually, add to your VS Code settings:
 }
 ```
 
-## Available Tools
+## Tools exposed
 
 | Tool | Description |
 |------|-------------|
-| `list_folders` | List folders (root or by parent ID) |
+| `list_folders` | List folders (optionally by parent ID) |
 | `list_documents` | List documents in a folder |
 | `get_document` | Get document metadata by ID |
 | `search_documents` | Search documents by name pattern |
@@ -96,42 +84,33 @@ If you need to configure manually, add to your VS Code settings:
 | `list_projects` | List all projects |
 | `get_repository_info` | Get repository information |
 
+## Auth and tokens
+
+Authentication is **token-only** (Bearer token from Bentley IMS). A helper script can automate token capture with Playwright:
+
+```bash
+npm run token:playwright
+```
+
+Populate `PW_TOKEN` in `.env` with the retrieved value. Basic auth is not supported.
+
 ## Development
 
 ```bash
-# Watch mode for TypeScript
+# Type checking in watch mode
 npm run watch
 
-# Run with tsx (auto-reloads)
+# Dev server with tsx
 npm run dev
 ```
 
-## WSG API Reference
-
-- **Authentication Headers**:
-  - `Authorization`: Bearer token
-  - `Mas-App-Guid`: Application identifier
-  - `Mas-Uuid`: Session identifier
-
-- **OData Query Support**: The WSG API supports `$filter`, `$select`, `$top`, `$skip`, and `$orderby` parameters.
+Logs are written to stderr (required by STDIO transports); view them in VS Code’s Output panel when running under an MCP client.
 
 ## Troubleshooting
 
-### Connection Issues
-
-1. Verify `PW_WSG_BASE_URL` is correct and accessible
-2. Check firewall/VPN settings
-3. Ensure the repository ID exists
-
-### Authentication Errors
-
-- **401 Unauthorized**: Check credentials
-- **403 Forbidden**: Verify user has repository access
-- For cloud: Ensure token is valid and not expired
-
-### Logs
-
-Logs are written to `stderr` (required for STDIO transport). In VS Code, check the Output panel for the MCP server.
+- Connection: verify `PW_WSG_BASE_URL` is reachable and the repository ID is correct.
+- Auth: `401`/`403` usually means an invalid/expired token or missing repository permissions.
+- WSG queries support `$filter`, `$select`, `$top`, `$skip`, `$orderby` if you add them inside client calls.
 
 ## License
 
